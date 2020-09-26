@@ -1,0 +1,7 @@
+{
+  "extends": "@p-chan/tsconfig",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./"
+  }
+}
