@@ -13,6 +13,10 @@ const app = new App({
 app.message('hello', async ({ message, say }) => {
   await say(`Hey there <@${message.user}>!`)
 })
+
+app.error(async (error) => {
+  console.error(error)
+})
 ;(async () => {
   await app.start(process.env.PORT || 3000)
 
