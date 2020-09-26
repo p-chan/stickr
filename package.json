@@ -15,7 +15,8 @@
     "dev": "ts-node ./src",
     "format": "prettier --write .",
     "prepare": "npm run build",
-    "start": "node ."
+    "start": "node .",
+    "watch": "nodemon --watch \"./src/**/*\" --exec \"ts-node\" ./src/index.ts"
   },
   "dependencies": {
     "@slack/bolt": "^2.3.0"
