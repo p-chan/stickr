@@ -21,6 +21,7 @@ const app = new App({
     'app_mentions:read',
     'channels:history',
     'chat:write',
+    'commands',
     'groups:history',
     'im:history',
     'mpim:history',

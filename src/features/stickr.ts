@@ -23,7 +23,7 @@ const createStickerBlocks = ({
         emoji: true,
       },
       image_url: stickerImageUrl,
-      alt_text: id,
+      alt_text: `stickr_${id}`,
     },
     {
       type: 'context',
