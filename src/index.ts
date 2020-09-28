@@ -2,6 +2,8 @@ import { App, Installation, InstallationQuery } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
 import dotenv from 'dotenv'
 
+import * as features from './features'
+
 const environment = process.env.NODE_ENV || 'development'
 
 if (environment === 'development') {
@@ -15,7 +17,7 @@ const app = new App({
   clientId: process.env.SLACK_CLIENT_ID,
   clientSecret: process.env.SLACK_CLIENT_SECRET,
   stateSecret: process.env.SLACK_STATE_SECRET,
-  scopes: ['channels:history', 'chat:write', 'groups:history', 'im:history', 'mpim:history'],
+  scopes: ['app_mentions:read', 'channels:history', 'chat:write', 'groups:history', 'im:history', 'mpim:history'],
   installationStore: {
     storeInstallation: async (installation: Installation) => {
       if (installation.enterprise) throw new Error('Enterprise is not support')
@@ -47,9 +49,10 @@ const app = new App({
   },
 })
 
-app.message('hello', async ({ message, say }) => {
-  await say(`Hey there <@${message.user}>!`)
-})
+for (const [featureName, handler] of Object.entries(features)) {
+  handler(app)
+  console.log(`Loaded feature module: ${featureName}`)
+}
 
 app.error(async (error) => {
   console.error(error)
