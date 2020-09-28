@@ -17,7 +17,18 @@ const app = new App({
   clientId: process.env.SLACK_CLIENT_ID,
   clientSecret: process.env.SLACK_CLIENT_SECRET,
   stateSecret: process.env.SLACK_STATE_SECRET,
-  scopes: ['app_mentions:read', 'channels:history', 'chat:write', 'groups:history', 'im:history', 'mpim:history'],
+  scopes: [
+    'app_mentions:read',
+    'channels:history',
+    'chat:write',
+    'groups:history',
+    'im:history',
+    'mpim:history',
+    'users:read',
+  ],
+  installerOptions: {
+    userScopes: ['chat:write'],
+  },
   installationStore: {
     storeInstallation: async (installation: Installation) => {
       if (installation.enterprise) throw new Error('Enterprise is not support')
