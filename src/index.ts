@@ -22,6 +22,7 @@ const app = new App({
     'channels:history',
     'chat:write',
     'commands',
+    'emoji:read',
     'groups:history',
     'im:history',
     'mpim:history',
