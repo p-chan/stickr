@@ -10,3 +10,6 @@ node_modules
 
 # output
 dist
+
+# temporary
+tmp
