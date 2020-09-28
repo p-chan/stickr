@@ -23,21 +23,21 @@ const app = new App({
       if (installation.enterprise) throw new Error('Enterprise is not support')
 
       const data = {
-        teamId: installation.team.id,
+        id: installation.team.id,
         raw: JSON.parse(JSON.stringify(installation)),
       }
 
-      await prisma.installation.upsert({
-        where: { teamId: installation.team.id },
+      await prisma.team.upsert({
+        where: { id: installation.team.id },
         create: data,
         update: data,
       })
     },
     fetchInstallation: async (InstallQuery: InstallationQuery): Promise<Installation> => {
-      return ((await prisma.installation
+      return ((await prisma.team
         .findOne({
           where: {
-            teamId: InstallQuery.teamId,
+            id: InstallQuery.teamId,
           },
         })
         .then((result) => {
