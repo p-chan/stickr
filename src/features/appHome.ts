@@ -89,6 +89,20 @@ const newStickerInputBlock = {
   },
 }
 
+const updateAliasesButtonBlock = {
+  type: 'actions',
+  elements: [
+    {
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text: 'エイリアスの紐付けを更新する',
+      },
+      action_id: 'update_aliases_action',
+    },
+  ],
+}
+
 export const AppHome = (app: App) => {
   /**
    * ホームを開いたとき
@@ -129,6 +143,7 @@ export const AppHome = (app: App) => {
             createUserTokenSectionBlock({ hasToken: true, isVerify: isVerify.ok }),
             newTokenButtonBlock,
             newStickerButtonBlock,
+            updateAliasesButtonBlock,
           ],
         },
       })
@@ -380,6 +395,66 @@ export const AppHome = (app: App) => {
       await client.chat.postMessage({
         channel: body.user.id,
         text: '失敗しました...',
+      })
+    }
+  })
+
+  /**
+   * エイリアスの紐付けを更新する
+   */
+  app.action('update_aliases_action', async ({ ack, body, client }) => {
+    ack()
+
+    try {
+      const teamId = body.team.id
+
+      /**
+       * 対象チームの既存のエイリアスを全て削除する
+       */
+      await prisma.alias.deleteMany({
+        where: {
+          teamId: teamId,
+        },
+      })
+
+      /**
+       * 対象チームの絵文字一覧を取得する
+       */
+      const emojiList: any = await client.emoji.list()
+
+      /**
+       * `alias:stickr_` から始まる絵文字を DB に登録する
+       */
+      await Promise.all(
+        Object.entries(emojiList.emoji).map(async ([key, value]) => {
+          const isStickrAlias = (value as string).match(/^(alias:stickr_)[\d]+/g)
+
+          if (!isStickrAlias) return
+
+          const originalName = (value as string).split(':')[1]
+
+          await prisma.alias.create({
+            data: {
+              name: key,
+              originalName: originalName,
+              team: {
+                connect: {
+                  id: teamId,
+                },
+              },
+            },
+          })
+        })
+      )
+
+      await client.chat.postMessage({
+        channel: body.user.id,
+        text: 'エイリアスの紐付けを更新しました',
+      })
+    } catch (error) {
+      await client.chat.postMessage({
+        channel: body.user.id,
+        text: 'エイリアスの紐付けに失敗しました',
       })
     }
   })
