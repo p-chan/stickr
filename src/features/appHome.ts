@@ -111,8 +111,8 @@ export const AppHome = (app: App) => {
     try {
       const user = await prisma.user.findOne({
         where: {
-          id_teamId: {
-            id: event.user,
+          userId_teamId: {
+            userId: event.user,
             teamId: body.team_id,
           },
         },
@@ -193,22 +193,25 @@ export const AppHome = (app: App) => {
 
       await prisma.user.upsert({
         where: {
-          id: body.user.id,
+          userId_teamId: {
+            userId: body.user.id,
+            teamId: body.team.id,
+          },
         },
         create: {
-          id: body.user.id,
+          userId: body.user.id,
           team: {
             connect: {
-              id: body.team.id,
+              teamId: body.team.id,
             },
           },
           xoxsToken: xoxsToken,
         },
         update: {
-          id: body.user.id,
+          userId: body.user.id,
           team: {
             connect: {
-              id: body.team.id,
+              teamId: body.team.id,
             },
           },
           xoxsToken: xoxsToken,
@@ -294,8 +297,8 @@ export const AppHome = (app: App) => {
       const user = await prisma.user
         .findOne({
           where: {
-            id_teamId: {
-              id: body.user.id,
+            userId_teamId: {
+              userId: body.user.id,
               teamId: body.team.id,
             },
           },
@@ -439,7 +442,7 @@ export const AppHome = (app: App) => {
               originalName: originalName,
               team: {
                 connect: {
-                  id: teamId,
+                  teamId: teamId,
                 },
               },
             },

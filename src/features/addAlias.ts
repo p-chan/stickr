@@ -71,8 +71,8 @@ export const AddAlias = (app: App) => {
       const user = await prisma.user
         .findOne({
           where: {
-            id_teamId: {
-              id: body.user.id,
+            userId_teamId: {
+              userId: body.user.id,
               teamId: body.team.id,
             },
           },

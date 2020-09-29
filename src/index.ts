@@ -36,12 +36,12 @@ const app = new App({
       if (installation.enterprise) throw new Error('Enterprise is not support')
 
       const data = {
-        id: installation.team.id,
+        teamId: installation.team.id,
         raw: JSON.parse(JSON.stringify(installation)),
       }
 
       await prisma.team.upsert({
-        where: { id: installation.team.id },
+        where: { teamId: installation.team.id },
         create: data,
         update: data,
       })
@@ -50,7 +50,7 @@ const app = new App({
       return ((await prisma.team
         .findOne({
           where: {
-            id: InstallQuery.teamId,
+            teamId: InstallQuery.teamId,
           },
         })
         .then((result) => {

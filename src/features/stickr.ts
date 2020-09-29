@@ -89,7 +89,7 @@ export const Stickr = (app: App) => {
       const userToken = await prisma.team
         .findOne({
           where: {
-            id: body.team_id,
+            teamId: body.team_id,
           },
         })
         .then((team) => {
