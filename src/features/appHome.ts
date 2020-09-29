@@ -5,6 +5,8 @@ import cheerio from 'cheerio'
 import fetch from 'isomorphic-unfetch'
 import FormData from 'form-data'
 import fs from 'fs'
+import mkdirp from 'mkdirp'
+import os from 'os'
 import path from 'path'
 
 const prisma = new PrismaClient()
@@ -281,7 +283,8 @@ export const AppHome = (app: App) => {
         staticUrl: string
       }[] = []
       const productId: any = (body.view.state as any).values.primary.product_id.value
-      const temporaryDirectoryPath = path.resolve(process.cwd(), './tmp')
+      const temporaryDirectoryPath = path.resolve(os.tmpdir(), './stickr')
+      mkdirp.sync(temporaryDirectoryPath)
 
       /**
        * DM で開始を通知
