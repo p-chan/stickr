@@ -267,7 +267,7 @@ export const AppHome = (app: App) => {
   })
 
   /**
-   * 新しいトークンを設定するモーダルを submit したとき
+   * 新しいスタンプを追加するモーダルを submit したとき
    */
   app.view('submit_new_sticker_modal', async ({ ack, body, client }) => {
     ack()
