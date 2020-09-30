@@ -1,4 +1,3 @@
-export * from './appHome'
 export * from './command'
 export * from './ping'
 export * from './stickr'
