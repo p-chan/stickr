@@ -50,7 +50,7 @@ export const Command = (app: App) => {
               text: {
                 type: 'mrkdwn',
                 text:
-                  '- `/stickr add [ID or URL]` スタンプを追加します\n- `/stickr token [XOXS_TOKEN]` 新しいトークンを設定します\n- `/stickr mapping` エイリアスのマッピングを更新します\n- `/stickr help` ヘルプを表示します\n',
+                  '- `/stickr add [ID]` スタンプを追加します\n- `/stickr token [XOXS_TOKEN]` 新しいトークンを設定します\n- `/stickr mapping` エイリアスのマッピングを更新します\n- `/stickr help` ヘルプを表示します\n',
               },
             },
             {
