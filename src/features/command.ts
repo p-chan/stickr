@@ -13,10 +13,8 @@ import { stickrEmojiPrefix } from '../globalSettings'
 const prisma = new PrismaClient()
 
 export const Command = (app: App) => {
-  app.command('/stickr-dev', async ({ ack, client, command }) => {
+  app.command('/stickr', async ({ ack, client, command }) => {
     await ack()
-
-    console.log(command)
 
     const channnelId = command.channel_id
     const userId = command.user_id
