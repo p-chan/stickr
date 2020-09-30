@@ -118,6 +118,21 @@ export const AddAlias = (app: App) => {
         if (!result.data.ok) throw new Error(result.data.error)
       })
 
+      /**
+       * DB にエイリアスを追加する
+       */
+      await prisma.alias.create({
+        data: {
+          name: aliasName,
+          originalName: originalName.replace(`${stickrEmojiPrefix}_`, ''),
+          team: {
+            connect: {
+              teamId: body.team.id,
+            },
+          },
+        },
+      })
+
       await client.chat.postEphemeral({
         channel: privateMetadata.channelId,
         text: `\`:${originalName}:\` に \`:${aliasName}:\` を付けました`,
