@@ -1,6 +1,8 @@
 import { App, SayArguments } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
 
+import { stickrEmojiPrefix } from '../globalSettings'
+
 const prisma = new PrismaClient()
 
 const createStickerBlocks = ({
@@ -23,7 +25,7 @@ const createStickerBlocks = ({
         emoji: true,
       },
       image_url: stickerImageUrl,
-      alt_text: `stickr_${id}`,
+      alt_text: `${stickrEmojiPrefix}_${id}`,
     },
     {
       type: 'context',
@@ -51,13 +53,13 @@ export const Stickr = (app: App) => {
       /**
        * オリジナルの絵文字の名前の取得
        */
-      const stickrEmojiName = await (async () => {
+      const emojiNameWithoutPrefix = await (async () => {
         const matchedText = context.matches[0]
         const matchedTextWithoutColon = matchedText.replace(/:/g, '')
 
-        // `:sticker_` から始まり `:` で終わるポストの場合、そのまま返す
-        if (matchedText.match(/^(:stickr_)[\d]+(:)$/g)) {
-          return matchedTextWithoutColon
+        // `:スタンプ_` から始まり `:` で終わるポストの場合、そのまま返す
+        if (matchedText.match(new RegExp('^(:' + stickrEmojiPrefix + '_)[0-9]+(:)$', 'g'))) {
+          return matchedTextWithoutColon.replace(`${stickrEmojiPrefix}_`, '')
         }
 
         // ポストされた絵文字がエイリアスとして登録されていないか調べる
@@ -78,7 +80,7 @@ export const Stickr = (app: App) => {
       })()
 
       // stickr に関連する絵文字ではない場合、return する
-      if (stickrEmojiName == undefined) return
+      if (emojiNameWithoutPrefix == undefined) return
 
       // ユーザー情報の取得
       const { user }: any = await client.users.info({
@@ -111,12 +113,11 @@ export const Stickr = (app: App) => {
       })
 
       // 画像の投稿
-      const stickerId: string = stickrEmojiName.split('_')[1]
-      const stickerImageURL = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`
+      const stickerImageURL = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${emojiNameWithoutPrefix}/android/sticker.png`
 
       say({
         blocks: createStickerBlocks({
-          id: stickerId,
+          id: emojiNameWithoutPrefix,
           stickerImageUrl: stickerImageURL,
           profileImageUrl: user.profile.image_24,
           displayName: user.profile.display_name === '' ? user.name : user.profile.display_name,

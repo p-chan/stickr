@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import FormData from 'form-data'
 
+import { stickrEmojiPrefix } from '../globalSettings'
+
 const prisma = new PrismaClient()
 
 export const AddAlias = (app: App) => {
@@ -12,7 +14,10 @@ export const AddAlias = (app: App) => {
     try {
       const firstMessage = (body as any).message.blocks[0]
 
-      if (firstMessage.type !== 'image' || firstMessage.alt_text.substr(0, 7) !== 'stickr_') {
+      if (
+        firstMessage.type !== 'image' ||
+        firstMessage.alt_text.substr(0, stickrEmojiPrefix.length + 1) !== `${stickrEmojiPrefix}_`
+      ) {
         throw new Error("This post is not Stickr's post")
       }
 
@@ -62,7 +67,7 @@ export const AddAlias = (app: App) => {
   app.view('submit_add_alias_action', async ({ ack, body, client, context, view }) => {
     ack()
 
-    const provateMetadata = JSON.parse(view.private_metadata)
+    const privateMetadata = JSON.parse(view.private_metadata)
 
     try {
       /**
@@ -93,7 +98,7 @@ export const AddAlias = (app: App) => {
       /**
        * エイリアスを追加する
        */
-      const originalName = provateMetadata.originalName
+      const originalName = privateMetadata.originalName
       const aliasName = (body.view.state as any).values.primary.alias_name.value
 
       const form: any = new FormData()
@@ -114,13 +119,13 @@ export const AddAlias = (app: App) => {
       })
 
       await client.chat.postEphemeral({
-        channel: provateMetadata.channelId,
-        text: `\`:${originalName}:\` に \`:${aliasName}\` を付けました`,
+        channel: privateMetadata.channelId,
+        text: `\`:${originalName}:\` に \`:${aliasName}:\` を付けました`,
         user: body.user.id,
       })
     } catch (error) {
       await client.chat.postEphemeral({
-        channel: provateMetadata.channelId,
+        channel: privateMetadata.channelId,
         text: `エイリアスの作成に失敗しました...`,
         user: body.user.id,
       })

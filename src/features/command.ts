@@ -8,11 +8,15 @@ import mkdirp from 'mkdirp'
 import os from 'os'
 import path from 'path'
 
+import { stickrEmojiPrefix } from '../globalSettings'
+
 const prisma = new PrismaClient()
 
 export const Command = (app: App) => {
-  app.command('/stickr', async ({ ack, client, command }) => {
+  app.command('/stickr-dev', async ({ ack, client, command }) => {
     await ack()
+
+    console.log(command)
 
     const channnelId = command.channel_id
     const userId = command.user_id
@@ -235,7 +239,7 @@ export const Command = (app: App) => {
             const file: any = fs.createReadStream(savedSticker.filePath)
 
             form.append('mode', 'data')
-            form.append('name', `stickr_${savedSticker.id}`)
+            form.append('name', `${stickrEmojiPrefix}_${savedSticker.id}`)
             form.append('image', file)
 
             const config = {
@@ -281,11 +285,11 @@ export const Command = (app: App) => {
          */
         await Promise.all(
           Object.entries(emojiList.emoji).map(async ([key, value]) => {
-            const isStickrAlias = (value as string).match(/^(alias:stickr_)[\d]+/g)
+            const isStickrAlias = (value as string).match(new RegExp('^(alias:' + stickrEmojiPrefix + '_)[0-9]+', 'g'))
 
             if (!isStickrAlias) return
 
-            const originalName = (value as string).split(':')[1]
+            const originalName = (value as string).split(':')[1].replace(`${stickrEmojiPrefix}_`, '')
 
             await prisma.alias.create({
               data: {
