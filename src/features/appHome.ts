@@ -283,7 +283,8 @@ export const AppHome = (app: App) => {
         staticUrl: string
       }[] = []
       const productId: any = (body.view.state as any).values.primary.product_id.value
-      const temporaryDirectoryPath = path.resolve(os.tmpdir(), './stickr')
+      const temporaryDirectoryPath =
+        process.env.NODE_ENV === 'production' ? path.resolve('/tmp', './stickr') : path.resolve(os.tmpdir(), './stickr')
       mkdirp.sync(temporaryDirectoryPath)
 
       /**
