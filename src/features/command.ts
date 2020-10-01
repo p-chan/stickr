@@ -44,6 +44,13 @@ export const Command = (app: App) => {
               type: 'section',
               text: {
                 type: 'mrkdwn',
+                text: '`/stickr token` でトークンを設定してから使ってください',
+              },
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
                 text: '*コマンド一覧*',
               },
             },
