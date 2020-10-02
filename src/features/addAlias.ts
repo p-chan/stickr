@@ -4,6 +4,7 @@ import axios from 'axios'
 import FormData from 'form-data'
 
 import { stickrEmojiPrefix } from '../globalSettings'
+import { emoji } from '../utilities'
 
 const prisma = new PrismaClient()
 
@@ -12,11 +13,11 @@ export const AddAlias = (app: App) => {
     ack()
 
     try {
-      const firstMessage = (body as any).message.blocks[0]
+      const firstBlock = (body as any).message.blocks[0]
 
       if (
-        firstMessage.type !== 'image' ||
-        firstMessage.alt_text.substr(0, stickrEmojiPrefix.length + 1) !== `${stickrEmojiPrefix}_`
+        firstBlock.type !== 'image' ||
+        firstBlock.alt_text.match(new RegExp('^(' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+$', 'g')) == undefined
       ) {
         throw new Error("This post is not Stickr's post")
       }
@@ -35,7 +36,7 @@ export const AddAlias = (app: App) => {
             text: 'Submit',
           },
           private_metadata: JSON.stringify({
-            originalName: firstMessage.alt_text,
+            altText: firstBlock.alt_text,
             channelId: (shortcut as any).channel.id,
           }),
           blocks: [
@@ -64,7 +65,7 @@ export const AddAlias = (app: App) => {
     }
   })
 
-  app.view('submit_add_alias_action', async ({ ack, body, client, context, view }) => {
+  app.view('submit_add_alias_action', async ({ ack, body, client, view }) => {
     ack()
 
     const privateMetadata = JSON.parse(view.private_metadata)
@@ -98,14 +99,14 @@ export const AddAlias = (app: App) => {
       /**
        * エイリアスを追加する
        */
-      const originalName = privateMetadata.originalName
       const aliasName = (body.view.state as any).values.primary.alias_name.value
+      const altText = privateMetadata.altText
 
       const form: any = new FormData()
 
       form.append('mode', 'alias')
       form.append('name', aliasName)
-      form.append('alias_for', originalName)
+      form.append('alias_for', altText)
 
       const config = {
         headers: {
@@ -121,10 +122,13 @@ export const AddAlias = (app: App) => {
       /**
        * DB にエイリアスを追加する
        */
+      const { productId, stickerId } = emoji.parse(altText)
+
       await prisma.alias.create({
         data: {
           name: aliasName,
-          originalName: originalName.replace(`${stickrEmojiPrefix}_`, ''),
+          productId,
+          stickerId,
           team: {
             connect: {
               teamId: body.team.id,
@@ -135,7 +139,7 @@ export const AddAlias = (app: App) => {
 
       await client.chat.postEphemeral({
         channel: privateMetadata.channelId,
-        text: `\`:${originalName}:\` に \`:${aliasName}:\` を付けました`,
+        text: `\`:${altText}:\` に \`:${aliasName}:\` を付けました`,
         user: body.user.id,
       })
     } catch (error) {
