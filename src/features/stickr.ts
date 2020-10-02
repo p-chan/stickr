@@ -2,7 +2,7 @@ import { App, SayArguments } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
 
 import { stickrEmojiPrefix } from '../globalSettings'
-import { emoji } from '../utilities'
+import { emoji, regex } from '../utilities'
 
 const prisma = new PrismaClient()
 
@@ -58,14 +58,14 @@ export const Stickr = (app: App) => {
         const matchedText = context.matches[0]
 
         // `:スタンプ_1234_1234:` のようなポストの場合
-        if (matchedText.match(new RegExp('^(:' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+(:)$', 'g'))) {
+        if (matchedText.match(regex.isStickrEmojiNameWithColonRegex)) {
           const { productId, stickerId } = emoji.parse(matchedText)
 
           return { productId, stickerId }
         }
 
-        // `:スタンプ_1234_1234_newgame` のようなポストの場合
-        if (matchedText.match(new RegExp('^(:' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+(_)[0-9a-zA-Z]+(:)$', 'g'))) {
+        // `:スタンプ_1234_1234_newgame:` のようなポストの場合
+        if (matchedText.match(regex.isStickrEmojiNameWithSuffixAndColon)) {
           const { productId, stickerId } = emoji.parse(matchedText)
 
           return { productId, stickerId }

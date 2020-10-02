@@ -6,7 +6,7 @@ import fs from 'fs'
 import mkdirp from 'mkdirp'
 import path from 'path'
 import { stickershop } from '../requests'
-import { emoji } from '../utilities'
+import { emoji, regex } from '../utilities'
 
 import { stickrEmojiPrefix, stickrSlashCommand, stickrTemporaryDirectoryPath } from '../globalSettings'
 
@@ -270,11 +270,9 @@ export const Command = (app: App) => {
          */
         await Promise.all(
           Object.entries(emojiList.emoji).map(async ([key, value]) => {
-            const isStickrAlias = (value as string).match(
-              new RegExp('^(alias:' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+$', 'g')
-            )
+            const isStickrEmojiAlias = (value as string).match(regex.isStickrEmojiAliasNameRegex)
 
-            if (!isStickrAlias) return
+            if (!isStickrEmojiAlias) return
 
             const { productId, stickerId } = emoji.parse((value as string).split(':')[1])
 

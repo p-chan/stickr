@@ -3,8 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import FormData from 'form-data'
 
-import { stickrEmojiPrefix } from '../globalSettings'
-import { emoji } from '../utilities'
+import { emoji, regex } from '../utilities'
 
 const prisma = new PrismaClient()
 
@@ -15,10 +14,7 @@ export const AddAlias = (app: App) => {
     try {
       const firstBlock = (body as any).message.blocks[0]
 
-      if (
-        firstBlock.type !== 'image' ||
-        firstBlock.alt_text.match(new RegExp('^(' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+$', 'g')) == undefined
-      ) {
+      if (firstBlock.type !== 'image' || firstBlock.alt_text.match(regex.isStickrEmojiNameRegex) == undefined) {
         throw new Error("This post is not Stickr's post")
       }
 
