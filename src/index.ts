@@ -3,10 +3,9 @@ import dotenv from 'dotenv'
 
 import * as features from './features'
 import { teamRepository } from './repositories'
+import { stickrEnvironment } from './globalSettings'
 
-const environment = process.env.NODE_ENV || 'development'
-
-if (environment === 'development') {
+if (stickrEnvironment === 'development') {
   dotenv.config()
 }
 
