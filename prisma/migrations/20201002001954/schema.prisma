@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 generator client {
@@ -35,13 +35,10 @@ model Alias {
   id        String   @id @default(uuid())
   name      String
   teamId    String
-  productId String
-  stickerId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   team Team @relation(fields: [teamId], references: [teamId])
 
   @@unique([name, teamId])
-  @@index([productId, stickerId])
 }

@@ -1,0 +1,85 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateField",
+      "model": "Alias",
+      "field": "productId",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "Alias",
+          "field": "productId"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "Alias",
+          "field": "productId"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "\"0\""
+    },
+    {
+      "tag": "CreateField",
+      "model": "Alias",
+      "field": "stickerId",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "Alias",
+          "field": "stickerId"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "Alias",
+          "field": "stickerId"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "\"0\""
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Model",
+          "model": "Alias",
+          "arguments": [
+            {
+              "name": "",
+              "value": "[productId, stickerId]"
+            }
+          ]
+        },
+        "directive": "index"
+      }
+    }
+  ]
+}
