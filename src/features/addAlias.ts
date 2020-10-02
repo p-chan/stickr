@@ -1,9 +1,8 @@
 import { App } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
-import axios from 'axios'
-import FormData from 'form-data'
 
 import { emoji, regex } from '../utilities'
+import { slack } from '../requests'
 
 const prisma = new PrismaClient()
 
@@ -98,21 +97,10 @@ export const AddAlias = (app: App) => {
       const aliasName = (body.view.state as any).values.primary.alias_name.value
       const altText = privateMetadata.altText
 
-      const form: any = new FormData()
-
-      form.append('mode', 'alias')
-      form.append('name', aliasName)
-      form.append('alias_for', altText)
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.xoxsToken}`,
-          ...form.getHeaders(),
-        },
-      }
-
-      await axios.post('https://slack.com/api/emoji.add', form, config).then((result) => {
-        if (!result.data.ok) throw new Error(result.data.error)
+      await slack.addEmojiAlias({
+        name: aliasName,
+        aliasFor: altText,
+        token: user.xoxsToken,
       })
 
       /**

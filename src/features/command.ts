@@ -1,7 +1,6 @@
 import { App } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
-import FormData from 'form-data'
 import fs from 'fs'
 import mkdirp from 'mkdirp'
 import path from 'path'
@@ -9,6 +8,8 @@ import { stickershop } from '../requests'
 import { emoji, regex } from '../utilities'
 
 import { stickrEmojiPrefix, stickrSlashCommand, stickrTemporaryDirectoryPath } from '../globalSettings'
+
+import { slack } from '../requests'
 
 const prisma = new PrismaClient()
 
@@ -220,21 +221,11 @@ export const Command = (app: App) => {
               stickerId: savedSticker.id,
             })
 
-            const form: any = new FormData()
-            const file: any = fs.createReadStream(savedSticker.filePath)
-
-            form.append('mode', 'data')
-            form.append('name', name)
-            form.append('image', file)
-
-            const config = {
-              headers: {
-                Authorization: `Bearer ${user.xoxsToken}`,
-                ...form.getHeaders(),
-              },
-            }
-
-            await axios.post('https://slack.com/api/emoji.add', form, config)
+            await slack.addEmoji({
+              name: name,
+              file: fs.createReadStream(savedSticker.filePath),
+              token: user.xoxsToken,
+            })
           })
         )
 
