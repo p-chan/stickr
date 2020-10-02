@@ -1,10 +1,8 @@
 import { App, SayArguments } from '@slack/bolt'
-import { PrismaClient } from '@prisma/client'
 
 import { stickrEmojiPrefix } from '../globalSettings'
 import { emoji, regex } from '../utilities'
-
-const prisma = new PrismaClient()
+import { aliasRepository, teamRepository } from '../repositories'
 
 const createStickerBlocks = ({
   stickerImageUrl,
@@ -72,13 +70,9 @@ export const Stickr = (app: App) => {
         }
 
         // ポストされた絵文字がエイリアスとして登録されていないか調べる
-        const alias = await prisma.alias.findOne({
-          where: {
-            name_teamId: {
-              name: emoji.convertWithoutColon(matchedText),
-              teamId: body.team_id,
-            },
-          },
+        const alias = await aliasRepository.findOne({
+          name: emoji.convertWithoutColon(matchedText),
+          teamId: body.team_id,
         })
 
         // エイリアスが見つかった場合、オリジナルの絵文字の名前を返す
@@ -105,21 +99,13 @@ export const Stickr = (app: App) => {
       })
 
       // ユーザートークンの取得
-      const userToken = await prisma.team
-        .findOne({
-          where: {
-            teamId: body.team_id,
-          },
-        })
-        .then((team) => {
-          if (team == undefined || team.raw == undefined) throw new Error('team is not found')
+      const team = await teamRepository.findOne({ teamId: body.team_id })
 
-          const userToken = JSON.parse(JSON.stringify(team.raw)).user.token
+      if (team == undefined) throw new Error('チームがありません')
 
-          if (userToken == undefined) throw new Error('userToken is not found')
+      const userToken = JSON.parse(JSON.stringify(team.raw)).user.token
 
-          return userToken
-        })
+      if (userToken == undefined) throw new Error('ユーザートークンがありません')
 
       // メッセージの削除
       await app.client.chat.delete({

@@ -1,17 +1,13 @@
 import { App } from '@slack/bolt'
-import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
 import fs from 'fs'
 import mkdirp from 'mkdirp'
 import path from 'path'
-import { stickershop } from '../requests'
+
+import { slack, stickershop } from '../requests'
 import { emoji, regex } from '../utilities'
-
 import { stickrEmojiPrefix, stickrSlashCommand, stickrTemporaryDirectoryPath } from '../globalSettings'
-
-import { slack } from '../requests'
-
-const prisma = new PrismaClient()
+import { aliasRepository, userRepository } from '../repositories'
 
 export const Command = (app: App) => {
   app.command(stickrSlashCommand, async ({ ack, client, command }) => {
@@ -92,54 +88,10 @@ export const Command = (app: App) => {
         const xoxsToken = commandTextArgs[1]
 
         // token の有効性を検証する
-        const isVerify = await client.auth
-          .test({
-            token: xoxsToken,
-          })
-          .then((res) => {
-            return res.ok
-          })
-          .catch(() => {
-            return false
-          })
-
-        if (!isVerify) {
-          await client.chat.postEphemeral({
-            channel: channnelId,
-            text: '有効なトークンを入力してください',
-            user: userId,
-          })
-
-          return
-        }
+        await client.auth.test({ token: xoxsToken })
 
         // token を永続化する
-        await prisma.user.upsert({
-          where: {
-            userId_teamId: {
-              userId: userId,
-              teamId: teamId,
-            },
-          },
-          create: {
-            userId: userId,
-            team: {
-              connect: {
-                teamId: teamId,
-              },
-            },
-            xoxsToken: xoxsToken,
-          },
-          update: {
-            userId: userId,
-            team: {
-              connect: {
-                teamId: teamId,
-              },
-            },
-            xoxsToken: xoxsToken,
-          },
-        })
+        await userRepository.upsert({ userId, teamId, xoxsToken })
 
         await client.chat.postEphemeral({
           channel: channnelId,
@@ -161,20 +113,9 @@ export const Command = (app: App) => {
         /**
          * ユーザー情報を取得する
          */
-        const user = await prisma.user
-          .findOne({
-            where: {
-              userId_teamId: {
-                userId: userId,
-                teamId: teamId,
-              },
-            },
-          })
-          .then((user) => {
-            if (user == undefined) throw new Error('Can not found user')
+        const user = await userRepository.findOne({ userId, teamId })
 
-            return user
-          })
+        if (user == undefined) throw new Error('ユーザーが見つかりませんでした')
 
         /**
          * xoxs トークンを検証する
@@ -245,11 +186,7 @@ export const Command = (app: App) => {
         /**
          * 対象チームの既存のエイリアスを全て削除する
          */
-        await prisma.alias.deleteMany({
-          where: {
-            teamId: teamId,
-          },
-        })
+        await aliasRepository.deleteAll({ teamId })
 
         /**
          * 対象チームの絵文字一覧を取得する
@@ -257,7 +194,7 @@ export const Command = (app: App) => {
         const emojiList: any = await client.emoji.list()
 
         /**
-         * `alias:stickr_` から始まる絵文字を DB に登録する
+         * `alias:スタンプ_` から始まる絵文字を DB に登録する
          */
         await Promise.all(
           Object.entries(emojiList.emoji).map(async ([key, value]) => {
@@ -267,18 +204,7 @@ export const Command = (app: App) => {
 
             const { productId, stickerId } = emoji.parse((value as string).split(':')[1])
 
-            await prisma.alias.create({
-              data: {
-                name: key,
-                productId: productId,
-                stickerId: stickerId,
-                team: {
-                  connect: {
-                    teamId: teamId,
-                  },
-                },
-              },
-            })
+            await aliasRepository.create({ name: key, productId, stickerId, teamId })
           })
         )
 

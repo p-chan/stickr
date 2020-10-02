@@ -1,16 +1,14 @@
 import { App, Installation, InstallationQuery } from '@slack/bolt'
-import { PrismaClient } from '@prisma/client'
 import dotenv from 'dotenv'
 
 import * as features from './features'
+import { teamRepository } from './repositories'
 
 const environment = process.env.NODE_ENV || 'development'
 
 if (environment === 'development') {
   dotenv.config()
 }
-
-const prisma = new PrismaClient()
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -35,29 +33,14 @@ const app = new App({
     storeInstallation: async (installation: Installation) => {
       if (installation.enterprise) throw new Error('Enterprise is not support')
 
-      const data = {
-        teamId: installation.team.id,
-        raw: JSON.parse(JSON.stringify(installation)),
-      }
-
-      await prisma.team.upsert({
-        where: { teamId: installation.team.id },
-        create: data,
-        update: data,
-      })
+      await teamRepository.upsert({ teamId: installation.team.id, installation })
     },
-    fetchInstallation: async (InstallQuery: InstallationQuery): Promise<Installation> => {
-      return ((await prisma.team
-        .findOne({
-          where: {
-            teamId: InstallQuery.teamId,
-          },
-        })
-        .then((result) => {
-          if (result == undefined) throw new Error('Installation is not found')
+    fetchInstallation: async (installQuery: InstallationQuery): Promise<Installation> => {
+      const team = await teamRepository.findOne({ teamId: installQuery.teamId })
 
-          return result.raw
-        })) as unknown) as Installation
+      if (team == undefined) throw new Error('チームが見つかりませんでした')
+
+      return (team.raw as unknown) as Installation
     },
   },
 })

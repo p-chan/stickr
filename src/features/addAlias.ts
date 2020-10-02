@@ -1,10 +1,8 @@
 import { App } from '@slack/bolt'
-import { PrismaClient } from '@prisma/client'
 
 import { emoji, regex } from '../utilities'
 import { slack } from '../requests'
-
-const prisma = new PrismaClient()
+import { aliasRepository, userRepository } from '../repositories'
 
 export const AddAlias = (app: App) => {
   app.shortcut('add_alias_action', async ({ shortcut, ack, client, body }) => {
@@ -69,20 +67,9 @@ export const AddAlias = (app: App) => {
       /**
        * ユーザー情報を取得する
        */
-      const user = await prisma.user
-        .findOne({
-          where: {
-            userId_teamId: {
-              userId: body.user.id,
-              teamId: body.team.id,
-            },
-          },
-        })
-        .then((user) => {
-          if (user == undefined) throw new Error('Can not found user')
+      const user = await userRepository.findOne({ userId: body.user.id, teamId: body.team.id })
 
-          return user
-        })
+      if (user == undefined) throw new Error('ユーザーが見つかりませんでした')
 
       /**
        * xoxs トークンを検証する
@@ -108,18 +95,7 @@ export const AddAlias = (app: App) => {
        */
       const { productId, stickerId } = emoji.parse(altText)
 
-      await prisma.alias.create({
-        data: {
-          name: aliasName,
-          productId,
-          stickerId,
-          team: {
-            connect: {
-              teamId: body.team.id,
-            },
-          },
-        },
-      })
+      await aliasRepository.create({ name: aliasName, productId, stickerId, teamId: body.team.id })
 
       await client.chat.postEphemeral({
         channel: privateMetadata.channelId,
@@ -132,6 +108,8 @@ export const AddAlias = (app: App) => {
         text: `エイリアスの作成に失敗しました...`,
         user: body.user.id,
       })
+
+      throw error
     }
   })
 }
