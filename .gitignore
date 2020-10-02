@@ -10,3 +10,7 @@ node_modules
 
 # output
 dist
+
+# temporary
+tmp/*
+!tmp/.gitkeep

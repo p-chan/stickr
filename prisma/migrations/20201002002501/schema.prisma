@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 generator client {
@@ -35,8 +35,8 @@ model Alias {
   id        String   @id @default(uuid())
   name      String
   teamId    String
-  productId String
-  stickerId String
+  productId String   @default("0")
+  stickerId String   @default("0")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

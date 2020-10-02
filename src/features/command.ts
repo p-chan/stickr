@@ -1,19 +1,19 @@
 import { App } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
 import axios from 'axios'
-import cheerio from 'cheerio'
 import FormData from 'form-data'
 import fs from 'fs'
 import mkdirp from 'mkdirp'
-import os from 'os'
 import path from 'path'
+import { stickershop } from '../requests'
+import { emoji } from '../utilities'
 
-import { stickrEmojiPrefix } from '../globalSettings'
+import { stickrEmojiPrefix, stickrSlashCommand, stickrTemporaryDirectoryPath } from '../globalSettings'
 
 const prisma = new PrismaClient()
 
 export const Command = (app: App) => {
-  app.command('/stickr', async ({ ack, client, command }) => {
+  app.command(stickrSlashCommand, async ({ ack, client, command }) => {
     await ack()
 
     const channnelId = command.channel_id
@@ -153,16 +153,9 @@ export const Command = (app: App) => {
        * add サブコマンド
        */
       if (subCommand === 'add') {
-        const stickers: {
-          id: number
-          staticUrl: string
-        }[] = []
         const productId: any = commandTextArgs[1]
-        const temporaryDirectoryPath =
-          process.env.NODE_ENV === 'production'
-            ? path.resolve('/tmp', './stickr')
-            : path.resolve(os.tmpdir(), './stickr')
-        mkdirp.sync(temporaryDirectoryPath)
+
+        mkdirp.sync(stickrTemporaryDirectoryPath)
 
         /**
          * ユーザー情報を取得する
@@ -192,38 +185,19 @@ export const Command = (app: App) => {
         /**
          * LINE スタンプをスクレイピングする
          */
-        const responseText = await fetch(`https://store.line.me/stickershop/product/${productId}/ja`).then(
-          async (response) => {
-            if (!response.ok) {
-              throw new Error('Sticker is not found')
-            }
-
-            return await response.text()
-          }
-        )
-
-        const $ = cheerio.load(responseText)
-
-        $('.FnStickerPreviewItem').each((_, element) => {
-          const json = JSON.parse(element.attribs['data-preview'])
-
-          stickers.push({
-            id: json.id,
-            staticUrl: json.staticUrl,
-          })
-        })
+        const product = await stickershop.getProduct(productId)
 
         /**
          * LINE スタンプをテンポラリーディレクトリに保存する
          */
         const savedStickers = await Promise.all(
-          stickers.map(async (sticker) => {
+          product.stickers.map(async (sticker) => {
             return await axios({
               method: 'get',
-              url: sticker.staticUrl,
+              url: sticker.url,
               responseType: 'stream',
             }).then((response) => {
-              const filePath = path.resolve(temporaryDirectoryPath, `${sticker.id}.png`)
+              const filePath = path.resolve(stickrTemporaryDirectoryPath, `${sticker.id}.png`)
 
               response.data.pipe(fs.createWriteStream(filePath))
 
@@ -240,11 +214,17 @@ export const Command = (app: App) => {
          */
         await Promise.all(
           savedStickers.map(async (savedSticker) => {
+            const name = emoji.stringify({
+              prefix: stickrEmojiPrefix,
+              productId: product.id,
+              stickerId: savedSticker.id,
+            })
+
             const form: any = new FormData()
             const file: any = fs.createReadStream(savedSticker.filePath)
 
             form.append('mode', 'data')
-            form.append('name', `${stickrEmojiPrefix}_${savedSticker.id}`)
+            form.append('name', name)
             form.append('image', file)
 
             const config = {
@@ -290,16 +270,19 @@ export const Command = (app: App) => {
          */
         await Promise.all(
           Object.entries(emojiList.emoji).map(async ([key, value]) => {
-            const isStickrAlias = (value as string).match(new RegExp('^(alias:' + stickrEmojiPrefix + '_)[0-9]+', 'g'))
+            const isStickrAlias = (value as string).match(
+              new RegExp('^(alias:' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+$', 'g')
+            )
 
             if (!isStickrAlias) return
 
-            const originalName = (value as string).split(':')[1].replace(`${stickrEmojiPrefix}_`, '')
+            const { productId, stickerId } = emoji.parse((value as string).split(':')[1])
 
             await prisma.alias.create({
               data: {
                 name: key,
-                originalName: originalName,
+                productId: productId,
+                stickerId: stickerId,
                 team: {
                   connect: {
                     teamId: teamId,

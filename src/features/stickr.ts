@@ -2,17 +2,18 @@ import { App, SayArguments } from '@slack/bolt'
 import { PrismaClient } from '@prisma/client'
 
 import { stickrEmojiPrefix } from '../globalSettings'
+import { emoji } from '../utilities'
 
 const prisma = new PrismaClient()
 
 const createStickerBlocks = ({
-  id,
   stickerImageUrl,
+  stickerAltText,
   profileImageUrl,
   displayName,
 }: {
-  id: string
   stickerImageUrl: string
+  stickerAltText: string
   profileImageUrl: string
   displayName: string
 }) => {
@@ -25,7 +26,7 @@ const createStickerBlocks = ({
         emoji: true,
       },
       image_url: stickerImageUrl,
-      alt_text: `${stickrEmojiPrefix}_${id}`,
+      alt_text: stickerAltText,
     },
     {
       type: 'context',
@@ -53,34 +54,50 @@ export const Stickr = (app: App) => {
       /**
        * オリジナルの絵文字の名前の取得
        */
-      const emojiNameWithoutPrefix = await (async () => {
+      const { productId, stickerId } = await (async () => {
         const matchedText = context.matches[0]
-        const matchedTextWithoutColon = matchedText.replace(/:/g, '')
 
-        // `:スタンプ_` から始まり `:` で終わるポストの場合、そのまま返す
-        if (matchedText.match(new RegExp('^(:' + stickrEmojiPrefix + '_)[0-9]+(:)$', 'g'))) {
-          return matchedTextWithoutColon.replace(`${stickrEmojiPrefix}_`, '')
+        // `:スタンプ_1234_1234:` のようなポストの場合
+        if (matchedText.match(new RegExp('^(:' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+(:)$', 'g'))) {
+          const { productId, stickerId } = emoji.parse(matchedText)
+
+          return { productId, stickerId }
+        }
+
+        // `:スタンプ_1234_1234_newgame` のようなポストの場合
+        if (matchedText.match(new RegExp('^(:' + stickrEmojiPrefix + '_)[0-9]+(_)[0-9]+(_)[0-9a-zA-Z]+(:)$', 'g'))) {
+          const { productId, stickerId } = emoji.parse(matchedText)
+
+          return { productId, stickerId }
         }
 
         // ポストされた絵文字がエイリアスとして登録されていないか調べる
         const alias = await prisma.alias.findOne({
           where: {
             name_teamId: {
-              name: matchedTextWithoutColon,
+              name: emoji.convertWithoutColon(matchedText),
               teamId: body.team_id,
             },
           },
         })
 
-        // エイリアスの場合、オリジナルの絵文字の名前を返す
-        if (alias) return alias.originalName
+        // エイリアスが見つかった場合、オリジナルの絵文字の名前を返す
+        if (alias) {
+          return {
+            productId: alias.productId,
+            stickerId: alias.stickerId,
+          }
+        }
 
         // 上記に該当しない場合、undefined を返す
-        return
+        return {
+          productId: undefined,
+          stickerId: undefined,
+        }
       })()
 
       // stickr に関連する絵文字ではない場合、return する
-      if (emojiNameWithoutPrefix == undefined) return
+      if (productId == undefined || stickerId == undefined) return
 
       // ユーザー情報の取得
       const { user }: any = await client.users.info({
@@ -112,13 +129,10 @@ export const Stickr = (app: App) => {
         as_user: true,
       })
 
-      // 画像の投稿
-      const stickerImageURL = `https://stickershop.line-scdn.net/stickershop/v1/sticker/${emojiNameWithoutPrefix}/android/sticker.png`
-
       say({
         blocks: createStickerBlocks({
-          id: emojiNameWithoutPrefix,
-          stickerImageUrl: stickerImageURL,
+          stickerImageUrl: `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`,
+          stickerAltText: emoji.stringify({ prefix: stickrEmojiPrefix, productId: productId, stickerId: stickerId }),
           profileImageUrl: user.profile.image_24,
           displayName: user.profile.display_name === '' ? user.name : user.profile.display_name,
         }),
