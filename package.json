@@ -27,6 +27,7 @@
     "@prisma/cli": "^2.8.0",
     "@prisma/client": "^2.7.1",
     "@slack/bolt": "^2.3.0",
+    "@speee-js/jsx-slack": "^2.4.0",
     "axios": "^0.20.0",
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.2.0",
