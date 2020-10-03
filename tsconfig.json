@@ -2,7 +2,10 @@
   "extends": "@p-chan/tsconfig",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "jsx": "react",
+    "jsxFactory": "JSXSlack.h",
+    "jsxFragmentFactory": "JSXSlack.Fragment"
   },
   "exclude": ["scripts/*"]
 }

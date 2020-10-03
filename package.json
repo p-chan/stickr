@@ -21,7 +21,7 @@
     "prebuild": "npm run clean",
     "scripts:rename": "ts-node ./scripts/rename.ts",
     "start": "node .",
-    "watch": "nodemon --watch \"./src/**/*\" --exec \"ts-node\" ./src/index.ts"
+    "watch": "nodemon --watch \"./src/**/*\" --ext \"ts,tsx\" --exec \"ts-node\" ./src/index.ts"
   },
   "dependencies": {
     "@prisma/cli": "^2.8.0",
