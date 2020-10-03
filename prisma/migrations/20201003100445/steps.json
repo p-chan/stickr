@@ -1,0 +1,69 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateField",
+      "model": "Alias",
+      "field": "suffix",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "Alias",
+          "field": "suffix"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "Alias",
+          "field": "suffix"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "\"\""
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Model",
+          "model": "Alias",
+          "arguments": [
+            {
+              "name": "",
+              "value": "[productId, stickerId, suffix]"
+            }
+          ]
+        },
+        "directive": "index"
+      }
+    },
+    {
+      "tag": "DeleteDirective",
+      "location": {
+        "path": {
+          "tag": "Model",
+          "model": "Alias",
+          "arguments": [
+            {
+              "name": "",
+              "value": "[productId, stickerId]"
+            }
+          ]
+        },
+        "directive": "index"
+      }
+    }
+  ]
+}

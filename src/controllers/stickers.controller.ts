@@ -15,7 +15,8 @@ export const add: Middleware<SlackCommandMiddlewareArgs> = async ({ client, comm
   const userId = command.user_id
 
   try {
-    const productId: any = command.text.split(' ')[1]
+    const productId = command.text.split(' ')[1]
+    const suffix = command.text.split(' ')[2]
 
     mkdirp.sync(globalSettings.temporaryDirectoryPath)
 
@@ -69,6 +70,7 @@ export const add: Middleware<SlackCommandMiddlewareArgs> = async ({ client, comm
           prefix: globalSettings.emojiPrefix,
           productId: product.id,
           stickerId: savedSticker.id,
+          suffix,
         })
 
         await slack.addEmoji({
@@ -106,21 +108,14 @@ export const replace: Middleware<SlackEventMiddlewareArgs<'message'>> = async ({
     /**
      * オリジナルの絵文字の名前の取得
      */
-    const { productId, stickerId } = await (async () => {
+    const { productId, stickerId, suffix } = await (async () => {
       const matchedText = context.matches[0]
-
-      // `:スタンプ_1234_1234:` のようなポストの場合
-      if (matchedText.match(regex.isStickrEmojiNameWithColonRegex)) {
-        const { productId, stickerId } = emoji.parse(matchedText)
-
-        return { productId, stickerId }
-      }
 
       // `:スタンプ_1234_1234_newgame:` のようなポストの場合
       if (matchedText.match(regex.isStickrEmojiNameWithSuffixAndColon)) {
-        const { productId, stickerId } = emoji.parse(matchedText)
+        const { productId, stickerId, suffix } = emoji.parse(matchedText)
 
-        return { productId, stickerId }
+        return { productId, stickerId, suffix }
       }
 
       // ポストされた絵文字がエイリアスとして登録されていないか調べる
@@ -134,6 +129,7 @@ export const replace: Middleware<SlackEventMiddlewareArgs<'message'>> = async ({
         return {
           productId: alias.productId,
           stickerId: alias.stickerId,
+          suffix: alias.suffix,
         }
       }
 
@@ -141,11 +137,12 @@ export const replace: Middleware<SlackEventMiddlewareArgs<'message'>> = async ({
       return {
         productId: undefined,
         stickerId: undefined,
+        suffix: undefined,
       }
     })()
 
     // stickr に関連する絵文字ではない場合、return する
-    if (productId == undefined || stickerId == undefined) return
+    if (productId == undefined || stickerId == undefined || suffix == undefined) return
 
     // ユーザー情報の取得
     const { user }: any = await client.users.info({
@@ -174,8 +171,9 @@ export const replace: Middleware<SlackEventMiddlewareArgs<'message'>> = async ({
         stickerImageUrl: `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`,
         stickerAltText: emoji.stringify({
           prefix: globalSettings.emojiPrefix,
-          productId: productId,
-          stickerId: stickerId,
+          productId,
+          stickerId,
+          suffix,
         }),
         profileImageUrl: user.profile.image_24,
         displayName: user.profile.display_name === '' ? user.name : user.profile.display_name,

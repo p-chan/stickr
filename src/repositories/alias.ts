@@ -4,11 +4,13 @@ export const create = async ({
   name,
   productId,
   stickerId,
+  suffix,
   teamId,
 }: {
   name: string
   productId: string
   stickerId: string
+  suffix: string
   teamId: string
 }) => {
   return await prisma.alias.create({
@@ -16,6 +18,7 @@ export const create = async ({
       name: name,
       productId,
       stickerId,
+      suffix,
       team: {
         connect: {
           teamId: teamId,

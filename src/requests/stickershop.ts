@@ -4,10 +4,13 @@ import fetch from 'isomorphic-unfetch'
 type Product = {
   id: string
   name: string
+  author: string
+  description: string
+  price: string
   stickers: Sticker[]
 }
 
-type Sticker = {
+export type Sticker = {
   id: string
   url: string
 }
@@ -21,6 +24,9 @@ export const getProduct = async (id: string) => {
     const product: Product = {
       id: id,
       name: $('.mdCMN38Item01Ttl').text(),
+      author: $('.mdCMN38Item01Author').text(),
+      description: $('.mdCMN38Item01Txt').text(),
+      price: $('.mdCMN38Item01Price').text(),
       stickers: [],
     }
 

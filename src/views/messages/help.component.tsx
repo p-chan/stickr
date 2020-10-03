@@ -10,7 +10,7 @@ type SubCommand = {
 
 const subCommand: SubCommand[] = [
   {
-    example: `${globalSettings.slashCommand} add [ID]`,
+    example: `${globalSettings.slashCommand} add [ID] [NAME]`,
     description: 'スタンプを追加します',
   },
   {

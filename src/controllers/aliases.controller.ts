@@ -22,7 +22,7 @@ export const openModal: Middleware<SlackShortcutMiddlewareArgs<SlackShortcut>> =
   try {
     const firstBlock = (body as any).message.blocks[0]
 
-    if (firstBlock.type !== 'image' || firstBlock.alt_text.match(regex.isStickrEmojiNameRegex) == undefined) {
+    if (firstBlock.type !== 'image' || firstBlock.alt_text.match(regex.isStickrEmojiNameWithSuffix) == undefined) {
       throw new Error("This post is not Stickr's post")
     }
 
@@ -70,9 +70,9 @@ export const submitModal: Middleware<SlackViewMiddlewareArgs> = async ({ ack, bo
     /**
      * DB にエイリアスを追加する
      */
-    const { productId, stickerId } = emoji.parse(altText)
+    const { productId, stickerId, suffix } = emoji.parse(altText)
 
-    await aliasRepository.create({ name: aliasName, productId, stickerId, teamId: body.team.id })
+    await aliasRepository.create({ name: aliasName, productId, stickerId, suffix, teamId: body.team.id })
 
     await client.chat.postEphemeral({
       channel: privateMetadata.channelId,
@@ -111,13 +111,13 @@ export const forceUpdateAll: Middleware<SlackCommandMiddlewareArgs> = async ({ c
      */
     await Promise.all(
       Object.entries(emojiList.emoji).map(async ([key, value]) => {
-        const isStickrEmojiAlias = (value as string).match(regex.isStickrEmojiAliasNameRegex)
+        const isStickrEmojiAlias = (value as string).match(regex.isStickrEmojiAliasNameWithSuffixRegex)
 
         if (!isStickrEmojiAlias) return
 
-        const { productId, stickerId } = emoji.parse((value as string).split(':')[1])
+        const { productId, stickerId, suffix } = emoji.parse((value as string).split(':')[1])
 
-        await aliasRepository.create({ name: key, productId, stickerId, teamId })
+        await aliasRepository.create({ name: key, productId, stickerId, suffix, teamId })
       })
     )
 
