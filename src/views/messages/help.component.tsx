@@ -1,7 +1,7 @@
 /** @jsx JSXSlack.h */
 import { JSXSlack, Blocks, Section, Field } from '@speee-js/jsx-slack'
 
-import { stickrSlashCommand } from '../../globalSettings'
+import { globalSettings } from '../../utilities'
 
 type SubCommand = {
   example: string
@@ -10,19 +10,19 @@ type SubCommand = {
 
 const subCommand: SubCommand[] = [
   {
-    example: `${stickrSlashCommand} add [ID]`,
+    example: `${globalSettings.slashCommand} add [ID]`,
     description: 'スタンプを追加します',
   },
   {
-    example: `${stickrSlashCommand} token [XOXS_TOKEN]`,
+    example: `${globalSettings.slashCommand} token [XOXS_TOKEN]`,
     description: '新しいトークンを設定します',
   },
   {
-    example: `${stickrSlashCommand} mapping`,
+    example: `${globalSettings.slashCommand} mapping`,
     description: 'エイリアスのマッピングを更新します',
   },
   {
-    example: `${stickrSlashCommand} help`,
+    example: `${globalSettings.slashCommand} help`,
     description: 'ヘルプを表示します',
   },
 ]

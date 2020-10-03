@@ -3,9 +3,9 @@ import dotenv from 'dotenv'
 
 import * as features from './features'
 import { teamRepository } from './repositories'
-import { stickrEnvironment } from './globalSettings'
+import { globalSettings } from './utilities'
 
-if (stickrEnvironment === 'development') {
+if (globalSettings.environment === 'development') {
   dotenv.config()
 }
 

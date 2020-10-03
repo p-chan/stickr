@@ -1,4 +1,4 @@
-import { prisma } from '../db'
+import { prisma } from '../utilities'
 
 export const upsert = async ({ userId, teamId, xoxsToken }: { userId: string; teamId: string; xoxsToken: string }) => {
   return await prisma.user.upsert({

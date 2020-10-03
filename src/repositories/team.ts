@@ -1,4 +1,4 @@
-import { prisma } from '../db'
+import { prisma } from '../utilities'
 import { Installation } from '@slack/bolt'
 
 export const findOne = async ({ teamId }: { teamId: string }) => {

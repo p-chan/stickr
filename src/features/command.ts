@@ -6,12 +6,12 @@ import path from 'path'
 
 import { slack, stickershop } from '../requests'
 import { emoji, regex } from '../utilities'
-import { stickrEmojiPrefix, stickrSlashCommand, stickrTemporaryDirectoryPath } from '../globalSettings'
+import { globalSettings } from '../utilities'
 import { aliasRepository, userRepository } from '../repositories'
 import { HelpComponent } from '../views'
 
 export const Command = (app: App) => {
-  app.command(stickrSlashCommand, async ({ ack, client, command }) => {
+  app.command(globalSettings.slashCommand, async ({ ack, client, command }) => {
     await ack()
 
     const channnelId = command.channel_id
@@ -64,7 +64,7 @@ export const Command = (app: App) => {
       if (subCommand === 'add') {
         const productId: any = commandTextArgs[1]
 
-        mkdirp.sync(stickrTemporaryDirectoryPath)
+        mkdirp.sync(globalSettings.temporaryDirectoryPath)
 
         /**
          * ユーザー情報を取得する
@@ -95,7 +95,7 @@ export const Command = (app: App) => {
               url: sticker.url,
               responseType: 'stream',
             }).then((response) => {
-              const filePath = path.resolve(stickrTemporaryDirectoryPath, `${sticker.id}.png`)
+              const filePath = path.resolve(globalSettings.temporaryDirectoryPath, `${sticker.id}.png`)
 
               response.data.pipe(fs.createWriteStream(filePath))
 
@@ -113,7 +113,7 @@ export const Command = (app: App) => {
         await Promise.all(
           savedStickers.map(async (savedSticker) => {
             const name = emoji.stringify({
-              prefix: stickrEmojiPrefix,
+              prefix: globalSettings.emojiPrefix,
               productId: product.id,
               stickerId: savedSticker.id,
             })

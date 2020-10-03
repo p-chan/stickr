@@ -1,1 +1,1 @@
-export * from './addAliasModal.component'
+export * from './add-alias-modal.component'

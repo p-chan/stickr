@@ -1,6 +1,6 @@
 import { App, SayArguments } from '@slack/bolt'
 
-import { stickrEmojiPrefix } from '../globalSettings'
+import { globalSettings } from '../utilities'
 import { emoji, regex } from '../utilities'
 import { aliasRepository, teamRepository } from '../repositories'
 import { StickerComponent } from '../views'
@@ -80,7 +80,11 @@ export const Stickr = (app: App) => {
       say({
         blocks: StickerComponent({
           stickerImageUrl: `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`,
-          stickerAltText: emoji.stringify({ prefix: stickrEmojiPrefix, productId: productId, stickerId: stickerId }),
+          stickerAltText: emoji.stringify({
+            prefix: globalSettings.emojiPrefix,
+            productId: productId,
+            stickerId: stickerId,
+          }),
           profileImageUrl: user.profile.image_24,
           displayName: user.profile.display_name === '' ? user.name : user.profile.display_name,
         }),

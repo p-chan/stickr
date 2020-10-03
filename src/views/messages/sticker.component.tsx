@@ -1,5 +1,5 @@
 /** @jsx JSXSlack.h */
-import { JSXSlack, Blocks, Section, Image, Context } from '@speee-js/jsx-slack'
+import { JSXSlack, Blocks, Image, Context } from '@speee-js/jsx-slack'
 
 type Props = {
   stickerImageUrl: string
