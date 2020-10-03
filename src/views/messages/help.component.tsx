@@ -27,7 +27,11 @@ const subCommand: SubCommand[] = [
   },
 ]
 
-export const HelpComponent = (): any => {
+type Props = {
+  teamDomain: string
+}
+
+export const HelpComponent = (props: Props): any => {
   const subCommandElements = subCommand.map(({ example, description }) => {
     return (
       <Field>
@@ -51,7 +55,7 @@ export const HelpComponent = (): any => {
         <b>トークンとは</b>
       </Section>
       <Section>
-        <code>https://[TEAM_NAME].slack.com/customize/emoji</code> の HTML 内から <code>xoxs-</code>{' '}
+        <code>https://{props.teamDomain}.slack.com/customize/emoji</code> の HTML 内から <code>xoxs-</code>{' '}
         で検索をしたときにマッチする一連の文字列のことです。
       </Section>
     </Blocks>

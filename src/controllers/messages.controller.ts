@@ -10,7 +10,7 @@ export const help: Middleware<SlackCommandMiddlewareArgs> = async ({ client, com
   await client.chat.postEphemeral({
     channel: command.channel_id,
     text: '',
-    blocks: HelpComponent(),
+    blocks: HelpComponent({ teamDomain: command.team_domain }),
     user: command.user_id,
   })
 }
