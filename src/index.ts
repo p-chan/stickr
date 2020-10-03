@@ -1,7 +1,7 @@
 import { App, Installation, InstallationQuery } from '@slack/bolt'
 import dotenv from 'dotenv'
 
-import * as features from './features'
+import { AliasesController, MessagesController, CommandsController } from './controllers'
 import { teamRepository } from './repositories'
 import { globalSettings } from './utilities'
 
@@ -44,10 +44,11 @@ const app = new App({
   },
 })
 
-for (const [featureName, handler] of Object.entries(features)) {
-  handler(app)
-  console.log(`Loaded feature module: ${featureName}`)
-}
+app.command(globalSettings.slashCommand, CommandsController.index)
+app.shortcut('add_alias_action', AliasesController.openModal)
+app.view('submit_add_alias_action', AliasesController.submitModal)
+app.event('app_mention', MessagesController.ping)
+app.message(/^(:)[\S]+(:)$/g, MessagesController.replace)
 
 app.error(async (error) => {
   console.error(error)
