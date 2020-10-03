@@ -8,6 +8,7 @@ import { slack, stickershop } from '../requests'
 import { emoji, regex } from '../utilities'
 import { stickrEmojiPrefix, stickrSlashCommand, stickrTemporaryDirectoryPath } from '../globalSettings'
 import { aliasRepository, userRepository } from '../repositories'
+import { HelpComponent } from '../views'
 
 export const Command = (app: App) => {
   app.command(stickrSlashCommand, async ({ ack, client, command }) => {
@@ -29,52 +30,7 @@ export const Command = (app: App) => {
         await client.chat.postEphemeral({
           channel: channnelId,
           text: '',
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':question: *ヘルプ*',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: '`/stickr token` でトークンを設定してから使ってください',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: '*コマンド一覧*',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text:
-                  '- `/stickr add [ID]` スタンプを追加します\n- `/stickr token [XOXS_TOKEN]` 新しいトークンを設定します\n- `/stickr mapping` エイリアスのマッピングを更新します\n- `/stickr help` ヘルプを表示します\n',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: '*トークンとは*',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text:
-                  '`https://[TEAM_NAME].slack.com/customize/emoji` の HTML 内から `xoxs-` で検索をしたときにマッチする一連の文字列のことです。',
-              },
-            },
-          ],
+          blocks: HelpComponent(),
           user: userId,
         })
 

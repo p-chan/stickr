@@ -3,45 +3,7 @@ import { App, SayArguments } from '@slack/bolt'
 import { stickrEmojiPrefix } from '../globalSettings'
 import { emoji, regex } from '../utilities'
 import { aliasRepository, teamRepository } from '../repositories'
-
-const createStickerBlocks = ({
-  stickerImageUrl,
-  stickerAltText,
-  profileImageUrl,
-  displayName,
-}: {
-  stickerImageUrl: string
-  stickerAltText: string
-  profileImageUrl: string
-  displayName: string
-}) => {
-  return [
-    {
-      type: 'image',
-      title: {
-        type: 'plain_text',
-        text: ' ',
-        emoji: true,
-      },
-      image_url: stickerImageUrl,
-      alt_text: stickerAltText,
-    },
-    {
-      type: 'context',
-      elements: [
-        {
-          type: 'image',
-          image_url: profileImageUrl,
-          alt_text: displayName,
-        },
-        {
-          type: 'mrkdwn',
-          text: `Posted by ${displayName}`,
-        },
-      ],
-    },
-  ]
-}
+import { StickerComponent } from '../views'
 
 export const Stickr = (app: App) => {
   /**
@@ -116,7 +78,7 @@ export const Stickr = (app: App) => {
       })
 
       say({
-        blocks: createStickerBlocks({
+        blocks: StickerComponent({
           stickerImageUrl: `https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png`,
           stickerAltText: emoji.stringify({ prefix: stickrEmojiPrefix, productId: productId, stickerId: stickerId }),
           profileImageUrl: user.profile.image_24,

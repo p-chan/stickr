@@ -3,6 +3,7 @@ import { App } from '@slack/bolt'
 import { emoji, regex } from '../utilities'
 import { slack } from '../requests'
 import { aliasRepository, userRepository } from '../repositories'
+import { AddAliasModalComponent } from '../views'
 
 export const AddAlias = (app: App) => {
   app.shortcut('add_alias_action', async ({ shortcut, ack, client, body }) => {
@@ -17,41 +18,7 @@ export const AddAlias = (app: App) => {
 
       await client.views.open({
         trigger_id: shortcut.trigger_id,
-        view: {
-          type: 'modal',
-          callback_id: 'submit_add_alias_action',
-          title: {
-            type: 'plain_text',
-            text: 'Add alias',
-          },
-          submit: {
-            type: 'plain_text',
-            text: 'Submit',
-          },
-          private_metadata: JSON.stringify({
-            altText: firstBlock.alt_text,
-            channelId: (shortcut as any).channel.id,
-          }),
-          blocks: [
-            {
-              type: 'input',
-              block_id: 'primary',
-              label: {
-                type: 'plain_text',
-                text: 'エイリアスの名前を入れてください',
-              },
-              element: {
-                type: 'plain_text_input',
-                placeholder: {
-                  type: 'plain_text',
-                  text: 'alias',
-                },
-                action_id: 'alias_name',
-                multiline: false,
-              },
-            },
-          ],
-        },
+        view: AddAliasModalComponent({ altText: firstBlock.alt_text, channelId: (shortcut as any).channel.id }),
       })
     } catch (error) {
       console.error(error)
