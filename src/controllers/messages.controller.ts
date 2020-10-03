@@ -11,10 +11,10 @@ export const ping: Middleware<SlackEventMiddlewareArgs<'app_mention'>> = async (
 
 export const help: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
   await client.chat.postEphemeral({
-    channel: command.channnelId,
+    channel: command.channel_id,
     text: '',
     blocks: HelpComponent(),
-    user: command.userId,
+    user: command.user_id,
   })
 }
 

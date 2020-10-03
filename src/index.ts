@@ -49,10 +49,10 @@ app.command(globalSettings.slashCommand, async (context) => {
 
   const subCommand = context.command.text.split(' ')[0]
 
-  if (subCommand === 'help') return MessagesController.help(context)
-  if (subCommand === 'mapping') return AliasesController.updateAll(context)
-  if (subCommand === 'token') return TokensController.register(context)
-  if (subCommand === 'add') return StickersController.add(context)
+  if (subCommand === 'help') return await MessagesController.help(context)
+  if (subCommand === 'mapping') return await AliasesController.updateAll(context)
+  if (subCommand === 'token') return await TokensController.register(context)
+  if (subCommand === 'add') return await StickersController.add(context)
 
   await context.client.chat.postEphemeral({
     channel: context.command.channel_id,
