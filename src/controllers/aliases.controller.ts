@@ -90,7 +90,7 @@ export const submitModal: Middleware<SlackViewMiddlewareArgs> = async ({ ack, bo
   }
 }
 
-export const updateAll: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
+export const forceUpdateAll: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
   const channelId = command.channel_id
   const teamId = command.team_id
   const userId = command.user_id

@@ -50,7 +50,7 @@ app.command(globalSettings.slashCommand, async (context) => {
   const subCommand = context.command.text.split(' ')[0]
 
   if (subCommand === 'help') return await MessagesController.help(context)
-  if (subCommand === 'mapping') return await AliasesController.updateAll(context)
+  if (subCommand === 'mapping') return await AliasesController.forceUpdateAll(context)
   if (subCommand === 'token') return await TokensController.register(context)
   if (subCommand === 'add') return await StickersController.add(context)
 
@@ -64,7 +64,7 @@ app.command(globalSettings.slashCommand, async (context) => {
 app.shortcut('add_alias_action', AliasesController.openModal)
 app.view('submit_add_alias_action', AliasesController.submitModal)
 app.event('app_mention', MessagesController.ping)
-app.message(/^(:)[\S]+(:)$/g, MessagesController.replace)
+app.message(/^(:)[\S]+(:)$/g, StickersController.replace)
 
 app.error(async (error) => {
   console.error(error)
