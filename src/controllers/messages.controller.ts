@@ -1,12 +1,21 @@
-import { Middleware, SlackEventMiddlewareArgs, SayArguments } from '@slack/bolt'
+import { Middleware, SlackEventMiddlewareArgs, SayArguments, SlackCommandMiddlewareArgs } from '@slack/bolt'
 
 import { globalSettings } from '../utilities'
 import { emoji, regex } from '../utilities'
 import { aliasRepository, teamRepository } from '../repositories'
-import { StickerComponent } from '../views'
+import { StickerComponent, HelpComponent } from '../views'
 
 export const ping: Middleware<SlackEventMiddlewareArgs<'app_mention'>> = async ({ say }) => {
   await say('pong')
+}
+
+export const help: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
+  await client.chat.postEphemeral({
+    channel: command.channnelId,
+    text: '',
+    blocks: HelpComponent(),
+    user: command.userId,
+  })
 }
 
 export const replace: Middleware<SlackEventMiddlewareArgs<'message'>> = async ({

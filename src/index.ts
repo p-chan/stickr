@@ -1,7 +1,7 @@
 import { App, Installation, InstallationQuery } from '@slack/bolt'
 import dotenv from 'dotenv'
 
-import { AliasesController, MessagesController, CommandsController } from './controllers'
+import { AliasesController, MessagesController, StickersController, TokensController } from './controllers'
 import { teamRepository } from './repositories'
 import { globalSettings } from './utilities'
 
@@ -44,7 +44,23 @@ const app = new App({
   },
 })
 
-app.command(globalSettings.slashCommand, CommandsController.index)
+app.command(globalSettings.slashCommand, async (context) => {
+  await context.ack()
+
+  const subCommand = context.command.text.split(' ')[0]
+
+  if (subCommand === 'help') return MessagesController.help(context)
+  if (subCommand === 'mapping') return AliasesController.updateAll(context)
+  if (subCommand === 'token') return TokensController.register(context)
+  if (subCommand === 'add') return StickersController.add(context)
+
+  await context.client.chat.postEphemeral({
+    channel: context.command.channel_id,
+    text: '有効なコマンドを入力してください',
+    user: context.command.user_id,
+  })
+})
+
 app.shortcut('add_alias_action', AliasesController.openModal)
 app.view('submit_add_alias_action', AliasesController.submitModal)
 app.event('app_mention', MessagesController.ping)

@@ -1,4 +1,10 @@
-import { Middleware, SlackShortcut, SlackShortcutMiddlewareArgs, SlackViewMiddlewareArgs } from '@slack/bolt'
+import {
+  Middleware,
+  SlackCommandMiddlewareArgs,
+  SlackShortcut,
+  SlackShortcutMiddlewareArgs,
+  SlackViewMiddlewareArgs,
+} from '@slack/bolt'
 
 import { aliasRepository, userRepository } from '../repositories'
 import { slack } from '../requests'
@@ -81,5 +87,52 @@ export const submitModal: Middleware<SlackViewMiddlewareArgs> = async ({ ack, bo
     })
 
     throw error
+  }
+}
+
+export const updateAll: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
+  const channelId = command.channel_id
+  const teamId = command.team_id
+  const userId = command.user_id
+
+  try {
+    /**
+     * 対象チームの既存のエイリアスを全て削除する
+     */
+    await aliasRepository.deleteAll({ teamId })
+
+    /**
+     * 対象チームの絵文字一覧を取得する
+     */
+    const emojiList: any = await client.emoji.list()
+
+    /**
+     * `alias:スタンプ_` から始まる絵文字を DB に登録する
+     */
+    await Promise.all(
+      Object.entries(emojiList.emoji).map(async ([key, value]) => {
+        const isStickrEmojiAlias = (value as string).match(regex.isStickrEmojiAliasNameRegex)
+
+        if (!isStickrEmojiAlias) return
+
+        const { productId, stickerId } = emoji.parse((value as string).split(':')[1])
+
+        await aliasRepository.create({ name: key, productId, stickerId, teamId })
+      })
+    )
+
+    await client.chat.postEphemeral({
+      channel: command.channel_id,
+      text: 'エイリアスのマッピングを更新しました',
+      user: command.user_id,
+    })
+  } catch (error) {
+    await client.chat.postEphemeral({
+      channel: channelId,
+      text: 'エラーが発生しました',
+      user: userId,
+    })
+
+    console.error(error)
   }
 }
