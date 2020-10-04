@@ -39,7 +39,7 @@ export const submitAddModal: Middleware<SlackViewMiddlewareArgs> = async ({ ack,
     const productId: string = (body.view.state as any).values.primary.product_id.value
     const suffix: string = (body.view.state as any).values.secondary.suffix.value
 
-    if (!suffix.match(/^\w+$/)) throw new Error('サフィックスが無効です')
+    if (!suffix.match(/^[a-zA-Z0-9]+$/)) throw new Error('サフィックスが無効です')
 
     mkdirp.sync(globalSettings.temporaryDirectoryPath)
 
