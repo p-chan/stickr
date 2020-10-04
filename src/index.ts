@@ -49,10 +49,10 @@ app.command(globalSettings.slashCommand, async (context) => {
 
   const subCommand = context.command.text.split(' ')[0]
 
-  if (subCommand === 'help') return await MessagesController.help(context)
+  if (subCommand === 'add') return await StickersController.openAddModal(context)
+  if (subCommand === 'token') return await TokensController.openAddModal(context)
   if (subCommand === 'mapping') return await AliasesController.forceUpdateAll(context)
-  if (subCommand === 'token') return await TokensController.register(context)
-  if (subCommand === 'add') return await StickersController.add(context)
+  if (subCommand === 'help') return await MessagesController.help(context)
 
   await context.client.chat.postEphemeral({
     channel: context.command.channel_id,
@@ -63,6 +63,8 @@ app.command(globalSettings.slashCommand, async (context) => {
 
 app.shortcut('add_alias_action', AliasesController.openModal)
 app.view('submit_add_alias_action', AliasesController.submitModal)
+app.view('submit_add_stickers_action', StickersController.submitAddModal)
+app.view('submit_add_token_action', TokensController.submitAddModal)
 app.event('app_mention', MessagesController.ping)
 app.message(/^(:)[\S]+(:)$/g, StickersController.replace)
 

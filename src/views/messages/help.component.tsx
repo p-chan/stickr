@@ -10,16 +10,12 @@ type SubCommand = {
 
 const subCommand: SubCommand[] = [
   {
-    example: `${globalSettings.slashCommand} add [ID] [NAME]`,
-    description: 'スタンプを追加します',
+    example: `${globalSettings.slashCommand} add`,
+    description: 'スタンプを追加するモーダルを起動します',
   },
   {
-    example: `${globalSettings.slashCommand} token [XOXS_TOKEN]`,
-    description: '新しいトークンを設定します',
-  },
-  {
-    example: `${globalSettings.slashCommand} mapping`,
-    description: 'エイリアスのマッピングを更新します',
+    example: `${globalSettings.slashCommand} token`,
+    description: 'トークンを設定するモーダルを起動します',
   },
   {
     example: `${globalSettings.slashCommand} help`,
@@ -27,11 +23,7 @@ const subCommand: SubCommand[] = [
   },
 ]
 
-type Props = {
-  teamDomain: string
-}
-
-export const HelpComponent = (props: Props): any => {
+export const HelpComponent = (): any => {
   const subCommandElements = subCommand.map(({ example, description }) => {
     return (
       <Field>
@@ -47,17 +39,7 @@ export const HelpComponent = (props: Props): any => {
       <Section>
         <b>ヘルプ</b>
       </Section>
-      <Section>
-        <b>サブコマンド一覧</b>
-      </Section>
       <Section>{subCommandElements}</Section>
-      <Section>
-        <b>トークンとは</b>
-      </Section>
-      <Section>
-        <code>https://{props.teamDomain}.slack.com/customize/emoji</code> の HTML 内から <code>xoxs-</code>{' '}
-        で検索をしたときにマッチする一連の文字列のことです。
-      </Section>
     </Blocks>
   )
 }

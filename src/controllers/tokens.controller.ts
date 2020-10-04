@@ -1,13 +1,29 @@
-import { Middleware, SlackCommandMiddlewareArgs } from '@slack/bolt'
+import { Middleware, SlackCommandMiddlewareArgs, SlackViewMiddlewareArgs } from '@slack/bolt'
 import { userRepository } from '../repositories'
+import { AddTokenModalComponent } from '../views'
 
-export const register: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
-  const channelId = command.channel_id
-  const teamId = command.team_id
-  const userId = command.user_id
+export const openAddModal: Middleware<SlackCommandMiddlewareArgs> = async ({ ack, client, command }) => {
+  try {
+    await client.views.open({
+      trigger_id: command.trigger_id,
+      view: AddTokenModalComponent({ channelId: command.channel_id, teamDomain: command.team_domain }),
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const submitAddModal: Middleware<SlackViewMiddlewareArgs> = async ({ ack, body, client, view }) => {
+  ack()
+
+  const privateMetadata = JSON.parse(view.private_metadata)
+
+  const channelId = privateMetadata.channelId
+  const teamId = body.team.id
+  const userId = body.user.id
 
   try {
-    const xoxsToken = command.text.split(' ')[1]
+    const xoxsToken = (body.view.state as any).values.primary.xoxs_token.value
 
     // token の有効性を検証する
     await client.auth.test({ token: xoxsToken })

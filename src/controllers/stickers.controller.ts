@@ -1,4 +1,10 @@
-import { Middleware, SlackCommandMiddlewareArgs, SlackEventMiddlewareArgs, SayArguments } from '@slack/bolt'
+import {
+  Middleware,
+  SlackCommandMiddlewareArgs,
+  SlackEventMiddlewareArgs,
+  SayArguments,
+  SlackViewMiddlewareArgs,
+} from '@slack/bolt'
 import axios from 'axios'
 import fs from 'fs'
 import mkdirp from 'mkdirp'
@@ -7,16 +13,33 @@ import path from 'path'
 import { userRepository, aliasRepository, teamRepository } from '../repositories'
 import { stickershop, slack } from '../requests'
 import { globalSettings, emoji, regex } from '../utilities'
-import { StickerComponent } from '../views'
+import { StickerComponent, AddStickersModalComponent } from '../views'
 
-export const add: Middleware<SlackCommandMiddlewareArgs> = async ({ client, command }) => {
-  const channelId = command.channel_id
-  const teamId = command.team_id
-  const userId = command.user_id
+export const openAddModal: Middleware<SlackCommandMiddlewareArgs> = async ({ ack, client, command, body }) => {
+  try {
+    await client.views.open({
+      trigger_id: command.trigger_id,
+      view: AddStickersModalComponent({ channelId: command.channel_id }),
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const submitAddModal: Middleware<SlackViewMiddlewareArgs> = async ({ ack, body, client, view }) => {
+  ack()
+
+  const privateMetadata = JSON.parse(view.private_metadata)
+
+  const channelId = privateMetadata.channelId
+  const teamId = body.team.id
+  const userId = body.user.id
 
   try {
-    const productId = command.text.split(' ')[1]
-    const suffix = command.text.split(' ')[2]
+    const productId: string = (body.view.state as any).values.primary.product_id.value
+    const suffix: string = (body.view.state as any).values.secondary.suffix.value
+
+    if (!suffix.match(/^\w+$/)) throw new Error('サフィックスが無効です')
 
     mkdirp.sync(globalSettings.temporaryDirectoryPath)
 
