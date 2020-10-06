@@ -9,6 +9,8 @@ if (globalSettings.environment === 'development') {
   dotenv.config()
 }
 
+const enableTeamIds = (process.env.ENABLE_TEAM_IDS as string).split(',')
+
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   clientId: process.env.SLACK_CLIENT_ID,
@@ -31,6 +33,10 @@ const app = new App({
   installationStore: {
     storeInstallation: async (installation: Installation) => {
       if (installation.enterprise) throw new Error('Enterprise is not support')
+
+      const isEnabled = enableTeamIds.includes(installation.team.id)
+
+      if (!isEnabled) throw new Error('teamId is not enabled')
 
       await teamRepository.upsert({ teamId: installation.team.id, installation })
     },
